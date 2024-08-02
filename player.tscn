@@ -1,0 +1,173 @@
+[gd_scene load_steps=7 format=3 uid="uid://cig5qi7gnco0c"]
+
+[ext_resource type="Script" path="res://player.gd" id="1_7tjow"]
+[ext_resource type="Texture2D" uid="uid://cdw67kr61vtc7" path="res://crosshairs_tilesheet_white.png" id="2_sgg6d"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_swwxw"]
+
+[sub_resource type="Theme" id="Theme_ji1ou"]
+Label/colors/font_outline_color = Color(0, 0, 0, 1)
+Label/constants/outline_size = 2
+
+[sub_resource type="LabelSettings" id="LabelSettings_x8drr"]
+font_size = 20
+outline_size = 5
+outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s1ax3"]
+
+[node name="Player" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_7tjow")
+maxspeed = 400.0
+boost = 250.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_swwxw")
+
+[node name="Polygon2D" type="Polygon2D" parent="CollisionShape2D"]
+polygon = PackedVector2Array(0, -15, -10, 15, 0, 12, 10, 15)
+
+[node name="Crosshair" type="Sprite2D" parent="CollisionShape2D"]
+texture_filter = 3
+position = Vector2(0, -250)
+texture = ExtResource("2_sgg6d")
+region_enabled = true
+region_rect = Rect2(69, 414, 64, 64)
+
+[node name="InertiaCrosshair" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.25098)
+texture_filter = 3
+position = Vector2(0, -250)
+texture = ExtResource("2_sgg6d")
+region_enabled = true
+region_rect = Rect2(69, 414, 64, 64)
+
+[node name="BoostTimer" type="Timer" parent="."]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 30.0
+editor_draw_limits = true
+
+[node name="UI" type="Control" parent="Camera2D"]
+z_index = 7
+layout_mode = 3
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 10
+size_flags_vertical = 3
+metadata/_edit_use_anchors_ = true
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Camera2D/UI"]
+layout_mode = 0
+offset_left = -750.0
+offset_top = 350.0
+offset_right = -379.0
+offset_bottom = 400.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/italics_font_size = 36
+bbcode_enabled = true
+text = "[i]%4d km/h[/i]"
+
+[node name="LifeBar" type="Control" parent="Camera2D/UI"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+metadata/_edit_use_anchors_ = true
+
+[node name="GrayBar" type="ColorRect" parent="Camera2D/UI/LifeBar"]
+layout_mode = 0
+offset_left = -763.0
+offset_top = -421.0
+offset_right = -363.0
+offset_bottom = -391.0
+color = Color(0.196078, 0.196078, 0.196078, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="GreenBar" type="ColorRect" parent="Camera2D/UI/LifeBar"]
+layout_mode = 0
+offset_left = -763.0
+offset_top = -421.0
+offset_right = -363.0
+offset_bottom = -391.0
+color = Color(0.176471, 0.788235, 0.243137, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" type="Label" parent="Camera2D/UI/LifeBar"]
+layout_mode = 0
+offset_left = -763.0
+offset_top = -421.0
+offset_right = -363.0
+offset_bottom = -391.0
+theme = SubResource("Theme_ji1ou")
+text = "100 HP"
+label_settings = SubResource("LabelSettings_x8drr")
+horizontal_alignment = 1
+clip_text = true
+
+[node name="BoostBar" type="ColorRect" parent="Camera2D/UI"]
+layout_mode = 0
+offset_left = -20.0
+offset_top = 34.0
+offset_right = 20.0
+offset_bottom = 37.0
+
+[node name="Minimap" type="Control" parent="Camera2D/UI"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="BGCircle" type="Polygon2D" parent="Camera2D/UI/Minimap"]
+position = Vector2(673, -320)
+color = Color(0.184314, 0.184314, 0.184314, 1)
+polygon = PackedVector2Array(-100, -100, 100, -100, 100, 100, -100, 100)
+
+[node name="Center" type="Polygon2D" parent="Camera2D/UI/Minimap"]
+position = Vector2(673, -320)
+
+[node name="Points" type="Control" parent="Camera2D/UI/Minimap"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DetectionZone" type="Area2D" parent="."]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionZone"]
+scale = Vector2(150, 150)
+shape = SubResource("RectangleShape2D_s1ax3")
+debug_color = Color(0, 0.6, 0.701961, 0.133333)
+
+[node name="RadarZone" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RadarZone"]
+scale = Vector2(300, 300)
+shape = SubResource("RectangleShape2D_s1ax3")
+debug_color = Color(0, 0.6, 0.701961, 0.133333)
+
+[node name="VisibleZone" type="Area2D" parent="."]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="VisibleZone"]
+scale = Vector2(79, 44)
+shape = SubResource("RectangleShape2D_s1ax3")
+debug_color = Color(0, 0.6, 0.701961, 0.133333)
+
+[node name="BodiesIndicators" type="Node2D" parent="."]
+
+[connection signal="timeout" from="BoostTimer" to="." method="_on_boost_timer_timeout"]
+[connection signal="area_entered" from="DetectionZone" to="." method="_on_detection_zone_area_entered"]
+[connection signal="area_exited" from="DetectionZone" to="." method="_on_detection_zone_area_exited"]
+[connection signal="body_entered" from="DetectionZone" to="." method="_on_detection_zone_body_entered"]
+[connection signal="body_exited" from="DetectionZone" to="." method="_on_detection_zone_body_exited"]
+[connection signal="area_entered" from="RadarZone" to="." method="_on_radar_zone_area_entered"]
+[connection signal="area_exited" from="RadarZone" to="." method="_on_radar_zone_area_exited"]
+[connection signal="area_entered" from="VisibleZone" to="." method="_on_visible_zone_area_entered"]
+[connection signal="area_exited" from="VisibleZone" to="." method="_on_visible_zone_area_exited"]
+[connection signal="body_entered" from="VisibleZone" to="." method="_on_visible_zone_body_entered"]
+[connection signal="body_exited" from="VisibleZone" to="." method="_on_visible_zone_body_exited"]

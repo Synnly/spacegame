@@ -1,0 +1,57 @@
+[gd_scene load_steps=4 format=3 uid="uid://bvlmoerobpswf"]
+
+[ext_resource type="Script" path="res://asteroid.gd" id="1_vjkf5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_01ele"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_f664m"]
+font_size = 12
+outline_size = 2
+outline_color = Color(0, 0, 0, 1)
+
+[node name="Asteroid" type="Area2D"]
+script = ExtResource("1_vjkf5")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(2.2, 2.2)
+shape = SubResource("RectangleShape2D_01ele")
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+scale = Vector2(2, 2)
+color = Color(0.7, 0, 0, 1)
+polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
+
+[node name="LifeBar" type="Control" parent="."]
+z_index = 6
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Background" type="ColorRect" parent="LifeBar"]
+layout_mode = 0
+offset_left = -40.0
+offset_top = -32.0
+offset_right = 40.0
+offset_bottom = -24.0
+color = Color(0.194349, 0.194349, 0.194349, 1)
+
+[node name="GreenBar" type="ColorRect" parent="LifeBar"]
+layout_mode = 0
+offset_left = -40.0
+offset_top = -32.0
+offset_right = 40.0
+offset_bottom = -24.0
+color = Color(0.176471, 0.788235, 0.243137, 1)
+
+[node name="HealthCount" type="Label" parent="LifeBar"]
+offset_left = -16.0
+offset_top = -56.0
+offset_right = 16.0
+offset_bottom = -31.0
+label_settings = SubResource("LabelSettings_f664m")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

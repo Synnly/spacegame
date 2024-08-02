@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=3 uid="uid://ilts8lea2ght"]
+
+[ext_resource type="Script" path="res://game.gd" id="1_68ejq"]
+[ext_resource type="PackedScene" uid="uid://cig5qi7gnco0c" path="res://player.tscn" id="1_kk7qv"]
+[ext_resource type="PackedScene" uid="uid://bvlmoerobpswf" path="res://asteroid.tscn" id="2_1lyhi"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_tv6hw"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_68ejq")
+
+[node name="Player" parent="." instance=ExtResource("1_kk7qv")]
+top_level = true
+position = Vector2(34, 314)
+
+[node name="WB_haut" type="StaticBody2D" parent="."]
+rotation = 3.14159
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WB_haut"]
+shape = SubResource("WorldBoundaryShape2D_tv6hw")
+
+[node name="WB_bas" type="StaticBody2D" parent="."]
+position = Vector2(0, 900)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WB_bas"]
+shape = SubResource("WorldBoundaryShape2D_tv6hw")
+
+[node name="WB_gauche" type="StaticBody2D" parent="."]
+rotation = 1.5708
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WB_gauche"]
+shape = SubResource("WorldBoundaryShape2D_tv6hw")
+
+[node name="WB_droite" type="StaticBody2D" parent="."]
+position = Vector2(1600, 0)
+rotation = -1.5708
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WB_droite"]
+shape = SubResource("WorldBoundaryShape2D_tv6hw")
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+color = Color(0.32, 0.181333, 0, 1)
+polygon = PackedVector2Array(0, 0, 0, 900, 1600, 900, 1600, 0)
+
+[node name="Asteroid" parent="." instance=ExtResource("2_1lyhi")]
+position = Vector2(950, 215)
+
+[node name="Asteroid2" parent="." instance=ExtResource("2_1lyhi")]
+position = Vector2(325, 497)
+
+[node name="Asteroid3" parent="." instance=ExtResource("2_1lyhi")]
+position = Vector2(763, 626)
+
+[node name="Asteroid4" parent="." instance=ExtResource("2_1lyhi")]
+position = Vector2(1232, 558)
