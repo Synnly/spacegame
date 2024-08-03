@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://player.gd" id="1_7tjow"]
 [ext_resource type="Texture2D" uid="uid://cdw67kr61vtc7" path="res://crosshairs_tilesheet_white.png" id="2_sgg6d"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s1ax3"]
+
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_swwxw"]
 
 [sub_resource type="Theme" id="Theme_ji1ou"]
@@ -14,13 +16,75 @@ font_size = 20
 outline_size = 5
 outline_color = Color(0, 0, 0, 1)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_s1ax3"]
-
 [node name="Player" type="CharacterBody2D"]
+visibility_layer = 3
 motion_mode = 1
 script = ExtResource("1_7tjow")
 maxspeed = 400.0
 boost = 250.0
+
+[node name="Gameplay" type="Node2D" parent="."]
+
+[node name="BoostTimer" type="Timer" parent="Gameplay"]
+
+[node name="Crosshairs" type="Node2D" parent="Gameplay"]
+
+[node name="Crosshair" type="Sprite2D" parent="Gameplay/Crosshairs"]
+texture_filter = 3
+position = Vector2(0, -250)
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("2_sgg6d")
+region_enabled = true
+region_rect = Rect2(69, 414, 64, 64)
+
+[node name="InertiaCrosshair" type="Sprite2D" parent="Gameplay/Crosshairs"]
+modulate = Color(1, 1, 1, 0.25098)
+texture_filter = 3
+position = Vector2(0, -250)
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("2_sgg6d")
+region_enabled = true
+region_rect = Rect2(69, 414, 64, 64)
+
+[node name="BoostCrosshair" type="Sprite2D" parent="Gameplay/Crosshairs"]
+modulate = Color(0.333242, 0.59547, 1, 0.25098)
+texture_filter = 3
+position = Vector2(0, -250)
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("2_sgg6d")
+region_enabled = true
+region_rect = Rect2(69, 414, 64, 64)
+
+[node name="DetectionZone" type="Area2D" parent="Gameplay"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Gameplay/DetectionZone"]
+scale = Vector2(150, 150)
+shape = SubResource("RectangleShape2D_s1ax3")
+debug_color = Color(0, 0.6, 0.701961, 0.133333)
+
+[node name="RadarZone" type="Area2D" parent="Gameplay"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Gameplay/RadarZone"]
+scale = Vector2(300, 300)
+shape = SubResource("RectangleShape2D_s1ax3")
+debug_color = Color(0, 0.6, 0.701961, 0.133333)
+
+[node name="VisibleZone" type="Area2D" parent="Gameplay"]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Gameplay/VisibleZone"]
+scale = Vector2(79, 44)
+shape = SubResource("RectangleShape2D_s1ax3")
+debug_color = Color(0, 0.6, 0.701961, 0.133333)
+
+[node name="BodiesIndicators" type="Node2D" parent="Gameplay"]
+
+[node name="Camera" type="Camera2D" parent="Gameplay"]
+position_smoothing_enabled = true
+position_smoothing_speed = 30.0
+editor_draw_limits = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_swwxw")
@@ -28,29 +92,7 @@ shape = SubResource("CapsuleShape2D_swwxw")
 [node name="Polygon2D" type="Polygon2D" parent="CollisionShape2D"]
 polygon = PackedVector2Array(0, -15, -10, 15, 0, 12, 10, 15)
 
-[node name="Crosshair" type="Sprite2D" parent="CollisionShape2D"]
-texture_filter = 3
-position = Vector2(0, -250)
-texture = ExtResource("2_sgg6d")
-region_enabled = true
-region_rect = Rect2(69, 414, 64, 64)
-
-[node name="InertiaCrosshair" type="Sprite2D" parent="."]
-modulate = Color(1, 1, 1, 0.25098)
-texture_filter = 3
-position = Vector2(0, -250)
-texture = ExtResource("2_sgg6d")
-region_enabled = true
-region_rect = Rect2(69, 414, 64, 64)
-
-[node name="BoostTimer" type="Timer" parent="."]
-
-[node name="Camera2D" type="Camera2D" parent="."]
-position_smoothing_enabled = true
-position_smoothing_speed = 30.0
-editor_draw_limits = true
-
-[node name="UI" type="Control" parent="Camera2D"]
+[node name="UI" type="Control" parent="."]
 z_index = 7
 layout_mode = 3
 anchor_top = 0.5
@@ -62,7 +104,7 @@ size_flags_horizontal = 10
 size_flags_vertical = 3
 metadata/_edit_use_anchors_ = true
 
-[node name="RichTextLabel" type="RichTextLabel" parent="Camera2D/UI"]
+[node name="RichTextLabel" type="RichTextLabel" parent="UI"]
 layout_mode = 0
 offset_left = -750.0
 offset_top = 350.0
@@ -74,13 +116,13 @@ theme_override_font_sizes/italics_font_size = 36
 bbcode_enabled = true
 text = "[i]%4d km/h[/i]"
 
-[node name="LifeBar" type="Control" parent="Camera2D/UI"]
+[node name="LifeBar" type="Control" parent="UI"]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 metadata/_edit_use_anchors_ = true
 
-[node name="GrayBar" type="ColorRect" parent="Camera2D/UI/LifeBar"]
+[node name="GrayBar" type="ColorRect" parent="UI/LifeBar"]
 layout_mode = 0
 offset_left = -763.0
 offset_top = -421.0
@@ -89,7 +131,7 @@ offset_bottom = -391.0
 color = Color(0.196078, 0.196078, 0.196078, 1)
 metadata/_edit_use_anchors_ = true
 
-[node name="GreenBar" type="ColorRect" parent="Camera2D/UI/LifeBar"]
+[node name="GreenBar" type="ColorRect" parent="UI/LifeBar"]
 layout_mode = 0
 offset_left = -763.0
 offset_top = -421.0
@@ -98,7 +140,7 @@ offset_bottom = -391.0
 color = Color(0.176471, 0.788235, 0.243137, 1)
 metadata/_edit_use_anchors_ = true
 
-[node name="Label" type="Label" parent="Camera2D/UI/LifeBar"]
+[node name="Label" type="Label" parent="UI/LifeBar"]
 layout_mode = 0
 offset_left = -763.0
 offset_top = -421.0
@@ -110,64 +152,114 @@ label_settings = SubResource("LabelSettings_x8drr")
 horizontal_alignment = 1
 clip_text = true
 
-[node name="BoostBar" type="ColorRect" parent="Camera2D/UI"]
+[node name="BoostBar" type="ColorRect" parent="UI"]
 layout_mode = 0
 offset_left = -20.0
 offset_top = 34.0
 offset_right = 20.0
 offset_bottom = 37.0
+color = Color(0.364706, 0.65098, 1, 1)
 
-[node name="Minimap" type="Control" parent="Camera2D/UI"]
+[node name="Minimap" type="Control" parent="UI"]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="BGCircle" type="Polygon2D" parent="Camera2D/UI/Minimap"]
+[node name="BGCircle" type="Polygon2D" parent="UI/Minimap"]
 position = Vector2(673, -320)
 color = Color(0.184314, 0.184314, 0.184314, 1)
 polygon = PackedVector2Array(-100, -100, 100, -100, 100, 100, -100, 100)
 
-[node name="Center" type="Polygon2D" parent="Camera2D/UI/Minimap"]
+[node name="Center" type="Polygon2D" parent="UI/Minimap"]
 position = Vector2(673, -320)
 
-[node name="Points" type="Control" parent="Camera2D/UI/Minimap"]
+[node name="Points" type="Control" parent="UI/Minimap"]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="DetectionZone" type="Area2D" parent="."]
-visible = false
+[node name="ButtonOptions" type="Button" parent="UI"]
+layout_mode = 0
+offset_left = 685.0
+offset_top = 400.0
+offset_right = 785.0
+offset_bottom = 442.0
+theme_override_font_sizes/font_size = 24
+text = "Options"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionZone"]
-scale = Vector2(150, 150)
-shape = SubResource("RectangleShape2D_s1ax3")
-debug_color = Color(0, 0.6, 0.701961, 0.133333)
+[node name="Options" type="Control" parent="."]
+visibility_layer = 2
+layout_mode = 3
+anchors_preset = 0
+offset_left = -800.0
+offset_top = -450.0
+offset_right = 800.0
+offset_bottom = 450.0
 
-[node name="RadarZone" type="Area2D" parent="."]
+[node name="ColorRect" type="ColorRect" parent="Options"]
+offset_right = 1600.0
+offset_bottom = 900.0
+color = Color(0.196078, 0.196078, 0.196078, 1)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="RadarZone"]
-scale = Vector2(300, 300)
-shape = SubResource("RectangleShape2D_s1ax3")
-debug_color = Color(0, 0.6, 0.701961, 0.133333)
+[node name="Assistance" type="VBoxContainer" parent="Options"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -206.0
+offset_top = -67.0
+offset_right = 244.0
+offset_bottom = 83.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+alignment = 1
 
-[node name="VisibleZone" type="Area2D" parent="."]
-visible = false
+[node name="Orientation" type="CheckButton" parent="Options/Assistance"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+button_pressed = true
+text = "Aide à l'orientation du vaisseau"
+expand_icon = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="VisibleZone"]
-scale = Vector2(79, 44)
-shape = SubResource("RectangleShape2D_s1ax3")
-debug_color = Color(0, 0.6, 0.701961, 0.133333)
+[node name="Inertia" type="CheckButton" parent="Options/Assistance"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+button_pressed = true
+text = "Aide à d'inertie du vaisseau"
 
-[node name="BodiesIndicators" type="Node2D" parent="."]
+[node name="Boost" type="CheckButton" parent="Options/Assistance"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+button_pressed = true
+text = "Aide au boost du vaisseau"
 
-[connection signal="timeout" from="BoostTimer" to="." method="_on_boost_timer_timeout"]
-[connection signal="area_entered" from="DetectionZone" to="." method="_on_detection_zone_area_entered"]
-[connection signal="area_exited" from="DetectionZone" to="." method="_on_detection_zone_area_exited"]
-[connection signal="body_entered" from="DetectionZone" to="." method="_on_detection_zone_body_entered"]
-[connection signal="body_exited" from="DetectionZone" to="." method="_on_detection_zone_body_exited"]
-[connection signal="area_entered" from="RadarZone" to="." method="_on_radar_zone_area_entered"]
-[connection signal="area_exited" from="RadarZone" to="." method="_on_radar_zone_area_exited"]
-[connection signal="area_entered" from="VisibleZone" to="." method="_on_visible_zone_area_entered"]
-[connection signal="area_exited" from="VisibleZone" to="." method="_on_visible_zone_area_exited"]
-[connection signal="body_entered" from="VisibleZone" to="." method="_on_visible_zone_body_entered"]
-[connection signal="body_exited" from="VisibleZone" to="." method="_on_visible_zone_body_exited"]
+[node name="Confirm" type="Button" parent="Options/Assistance"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Confirmer"
+
+[node name="ButtonOptions" type="Button" parent="Options"]
+offset_left = 1485.0
+offset_top = 850.0
+offset_right = 1585.0
+offset_bottom = 892.0
+theme_override_font_sizes/font_size = 24
+text = "Options"
+
+[connection signal="timeout" from="Gameplay/BoostTimer" to="." method="_on_boost_timer_timeout"]
+[connection signal="area_entered" from="Gameplay/DetectionZone" to="." method="_on_detection_zone_area_entered"]
+[connection signal="area_exited" from="Gameplay/DetectionZone" to="." method="_on_detection_zone_area_exited"]
+[connection signal="body_entered" from="Gameplay/DetectionZone" to="." method="_on_detection_zone_body_entered"]
+[connection signal="body_exited" from="Gameplay/DetectionZone" to="." method="_on_detection_zone_body_exited"]
+[connection signal="area_entered" from="Gameplay/RadarZone" to="." method="_on_radar_zone_area_entered"]
+[connection signal="area_exited" from="Gameplay/RadarZone" to="." method="_on_radar_zone_area_exited"]
+[connection signal="area_entered" from="Gameplay/VisibleZone" to="." method="_on_visible_zone_area_entered"]
+[connection signal="area_exited" from="Gameplay/VisibleZone" to="." method="_on_visible_zone_area_exited"]
+[connection signal="body_entered" from="Gameplay/VisibleZone" to="." method="_on_visible_zone_body_entered"]
+[connection signal="body_exited" from="Gameplay/VisibleZone" to="." method="_on_visible_zone_body_exited"]
+[connection signal="pressed" from="UI/ButtonOptions" to="." method="_on_button_options_pressed"]
+[connection signal="pressed" from="Options/Assistance/Confirm" to="." method="_on_confirm_pressed"]
+[connection signal="pressed" from="Options/ButtonOptions" to="." method="_on_button_options_pressed"]

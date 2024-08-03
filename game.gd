@@ -7,6 +7,7 @@ extends Node2D
 
 const X_MARGIN = 2500
 const Y_MARGIN = 2500
+var game_paused = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

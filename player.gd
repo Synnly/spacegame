@@ -1,24 +1,25 @@
 extends CharacterBody2D
 
-@onready var detection_zone = $DetectionZone
-@onready var visible_zone = $VisibleZone
-@onready var radar_zone = $RadarZone
+@onready var detection_zone = $Gameplay/DetectionZone
+@onready var visible_zone = $Gameplay/VisibleZone
+@onready var radar_zone = $Gameplay/RadarZone
 
-@onready var speed_label = $Camera2D/UI/RichTextLabel
-@onready var health_label = $Camera2D/UI/LifeBar/Label
+@onready var speed_label = $UI/RichTextLabel
+@onready var health_label = $UI/LifeBar/Label
 
-@onready var green_bar = $Camera2D/UI/LifeBar/GreenBar
-@onready var boost_bar = $Camera2D/UI/BoostBar
-@onready var boost_timer = $BoostTimer
+@onready var green_bar = $UI/LifeBar/GreenBar
+@onready var boost_bar = $UI/BoostBar
+@onready var boost_timer = $Gameplay/BoostTimer
 
-@onready var bodies_indicators = $BodiesIndicators
-@onready var crosshair = $CollisionShape2D/Crosshair
-@onready var inertia_crosshair = $InertiaCrosshair
+@onready var bodies_indicators = $Gameplay/BodiesIndicators
+@onready var crosshair = $Gameplay/Crosshairs/Crosshair
+@onready var inertia_crosshair = $Gameplay/Crosshairs/InertiaCrosshair
+@onready var boost_crosshair = $Gameplay/Crosshairs/BoostCrosshair
 
-@onready var bg_circle = $Camera2D/UI/Minimap/BGCircle
-@onready var minimap = $Camera2D/UI/Minimap
-@onready var minimap_points = $Camera2D/UI/Minimap/Points
-@onready var minimap_center = $Camera2D/UI/Minimap/Center
+@onready var bg_circle = $UI/Minimap/BGCircle
+@onready var minimap = $UI/Minimap
+@onready var minimap_points = $UI/Minimap/Points
+@onready var minimap_center = $UI/Minimap/Center
 
 const INDICATOR_MARGIN = 50
 const MINIMAP_RADIUS = 100
@@ -29,48 +30,85 @@ const LINE_INERTIA_SEGMENT_COUNT = 10
 @export var acceleration = 100.
 @export var rotationnalspeed = PI/60.
 @export var boost = 200.
+
 var can_boost = true
 var maxhealth = 200.
 var health = maxhealth
 
-#var bodies_detected = []
-#var bodies_visible = []
 var areas_radar = []
 var areas_detected = []
 var areas_visible = []
 var indicator_polygon = PackedVector2Array([Vector2(0, -15), Vector2(-10, 8), Vector2(0, 12), Vector2(10, 8)])
-var wb_regex = RegEx.new()
 var minimap_point_polygon = create_circle(8, MINIMAP_POINT_RADIUS)
 
+var show_orientation: bool
+var show_inertia: bool
+var show_boost: bool
+
+
 func _ready():
-	wb_regex.compile(r'(WB_.*)|(Player)')
+	# Ui visibility
+	$UI.visible = true
+	$Options.visible = false
+	
+	# Crosshairs
+	show_orientation = $Options/Assistance/Orientation.button_pressed
+	show_inertia = $Options/Assistance/Inertia.button_pressed
+	show_boost = $Options/Assistance/Boost.button_pressed
+	
 	bg_circle.polygon = create_circle(360, MINIMAP_RADIUS)
 	minimap_center.polygon = create_circle(8, 3)
 	inertia_crosshair.position = Vector2(0, -250)
 	
 		
 func _physics_process(delta):
-	handle_movement(delta)
-	handle_indicators()
-	handle_minimap()
+	if !owner.game_paused:
+		handle_movement(delta)
+		handle_indicators()
+		handle_minimap()
+		
+		# Crosshairs
+		if show_orientation:
+			crosshair.position = Vector2.UP.rotated($CollisionShape2D.rotation) * 250
+		
+		if show_inertia:
+			inertia_crosshair.position = velocity.normalized() * 250 if velocity != Vector2.ZERO else inertia_crosshair.position
+		
+		if show_boost:
+			boost_crosshair.position = (velocity + Vector2(0, -boost).rotated($CollisionShape2D.rotation)).normalized() * 250 if velocity != Vector2.ZERO else crosshair.position
+		
+		# Bars
+		health_label.text = str(int(health)) + " HP"
+		green_bar.scale.x = health/maxhealth
+		boost_bar.scale.x = boost_timer.time_left / boost_timer.wait_time
+		queue_redraw()
 	
-	print()
+	else:
+		pass
 	
-	crosshair.rotation = - $CollisionShape2D.rotation
-	inertia_crosshair.position = velocity.normalized() * 250 if velocity != Vector2.ZERO else inertia_crosshair.position
-	health_label.text = str(int(health)) + " HP"
-	green_bar.scale.x = health/maxhealth
-	boost_bar.scale.x = boost_timer.time_left / boost_timer.wait_time
-	queue_redraw()
 	
 func _draw():
-	var dashed_line_inertia_points = []
-	for i in range(LINE_INERTIA_SEGMENT_COUNT):
-		var point = ((inertia_crosshair.global_position - global_position) / (LINE_INERTIA_SEGMENT_COUNT)) * i
-		var margin = ((inertia_crosshair.global_position - global_position) / (LINE_INERTIA_SEGMENT_COUNT)) * 0.11
-		dashed_line_inertia_points.push_back(point)
-		dashed_line_inertia_points.push_back(point + margin)
-	draw_multiline(PackedVector2Array(dashed_line_inertia_points), Color(1, 1, 1, 0.25), 3)
+	
+	# Inertia line
+	if show_inertia:
+		var dashed_line_inertia_points = []
+		for i in range(LINE_INERTIA_SEGMENT_COUNT):
+			var point = ((inertia_crosshair.global_position - global_position) / (LINE_INERTIA_SEGMENT_COUNT)) * i
+			var margin = ((inertia_crosshair.global_position - global_position) / (LINE_INERTIA_SEGMENT_COUNT)) * 0.11
+			dashed_line_inertia_points.push_back(point)
+			dashed_line_inertia_points.push_back(point + margin)
+		draw_multiline(PackedVector2Array(dashed_line_inertia_points), Color(1, 1, 1, 0.25), 3)
+		
+	if show_boost:
+		# Boost line
+		var dashed_line_boost_points = []
+		for i in range(LINE_INERTIA_SEGMENT_COUNT):
+			var point = ((boost_crosshair.global_position - global_position) / (LINE_INERTIA_SEGMENT_COUNT)) * i
+			var margin = ((boost_crosshair.global_position - global_position) / (LINE_INERTIA_SEGMENT_COUNT)) * 0.11
+			dashed_line_boost_points.push_back(point)
+			dashed_line_boost_points.push_back(point + margin)
+		draw_multiline(PackedVector2Array(dashed_line_boost_points), Color(0.33, 0.59, 1, 0.25), 3)
+	
 	
 ## Handles all of the movement and updates the speed label
 func handle_movement(delta: float) -> void:
@@ -84,7 +122,7 @@ func handle_movement(delta: float) -> void:
 	# Boost
 	if can_boost and velocity.length() < maxspeed + boost and Input.is_action_just_pressed("boost"):	
 		can_boost = false
-		$BoostTimer.start()
+		$Gameplay/BoostTimer.start()
 		if direction_input.y == 0:
 			velocity += Vector2(0, -boost).rotated($CollisionShape2D.rotation)
 		else:
@@ -176,27 +214,13 @@ func create_circle(sides: int, radius: int) -> PackedVector2Array:
 		polygon_array.push_back(Vector2(cos(angle), sin(angle)) * radius)
 	return polygon_array
 	
-## ===================================================
-## =============== Functions connected ===============
-## ===================================================
+# ===================================================
+# =============== Functions connected ===============
+# ===================================================
 			
 func _on_boost_timer_timeout():
 	can_boost = true
 	boost_timer.stop()
-
-#func _on_detection_zone_body_entered(body):
-	#if not wb_regex.search(body.name):
-		#bodies_detected.append(body)
-#
-#func _on_detection_zone_body_exited(body):
-	#bodies_detected.erase(body)
-#
-#func _on_visible_zone_body_entered(body):
-	#if not wb_regex.search(body.name):
-		#bodies_visible.append(body)
-#
-#func _on_visible_zone_body_exited(body):
-	#bodies_visible.erase(body)
 
 func _on_detection_zone_area_entered(area):
 	if not area.owner.name == "Player":
@@ -233,3 +257,29 @@ func _on_radar_zone_area_exited(area):
 		if point.name == area.name:
 			point.queue_free()
 			break
+
+func _on_button_options_pressed():
+	owner.game_paused = !owner.game_paused
+	var game_paused = owner.game_paused
+	$UI.visible = !game_paused
+	$Gameplay.visible = !game_paused
+	$Options.visible = game_paused
+	$Gameplay/Camera.position_smoothing_enabled = !game_paused
+	
+	# If changes not confirmed, change them back to previous state
+	$Options/Assistance/Orientation.button_pressed = show_orientation
+	$Options/Assistance/Inertia.button_pressed = show_inertia
+	$Options/Assistance/Boost.button_pressed = show_boost
+	
+
+func _on_confirm_pressed():
+	show_orientation = $Options/Assistance/Orientation.button_pressed
+	crosshair.visible = $Options/Assistance/Orientation.button_pressed
+	
+	show_inertia = $Options/Assistance/Inertia.button_pressed
+	inertia_crosshair.visible = $Options/Assistance/Inertia.button_pressed
+	
+	show_boost = $Options/Assistance/Boost.button_pressed
+	boost_crosshair.visible = $Options/Assistance/Boost.button_pressed
+	
+	_on_button_options_pressed()
